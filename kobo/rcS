@@ -70,15 +70,6 @@ fi
 # workaround for kernel crash "scheduling while atomic"
 echo -e '\000\000\000\000' > /proc/sys/kernel/hotplug
 
-#this magic will force Kobo Touch Original (N905) to work!
-/sbin/udevd -d
-
-/sbin/udevadm control --env=STARTUP=1
-/sbin/udevadm trigger
-/sbin/udevadm settle --timeout=2
-/sbin/udevadm control --env=STARTUP=
-#magic end
-
 # disable the flashing led
 echo "ch 3" > /sys/devices/platform/pmic_light.1/lit
 echo "cur 0" > /sys/devices/platform/pmic_light.1/lit
