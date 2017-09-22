@@ -28,16 +28,8 @@
  */
 
 #include "WStringCompare.hxx"
-#include "WStringAPI.hxx"
 
 #include <assert.h>
-#include <string.h>
-
-bool
-StringStartsWith(const wchar_t *haystack, const wchar_t *needle) noexcept
-{
-	return memcmp(haystack, needle, StringLength(needle) * sizeof(needle[0])) == 0;
-}
 
 bool
 StringEndsWith(const wchar_t *haystack, const wchar_t *needle) noexcept
@@ -62,33 +54,16 @@ StringEndsWithIgnoreCase(const wchar_t *haystack,
 }
 
 const wchar_t *
-StringAfterPrefix(const wchar_t *string, const wchar_t *prefix) noexcept
+FindStringSuffix(const wchar_t *p, const wchar_t *suffix) noexcept
 {
-	assert(string != nullptr);
-	assert(prefix != nullptr);
+	const size_t p_length = StringLength(p);
+	const size_t suffix_length = StringLength(suffix);
 
-	size_t prefix_length = StringLength(prefix);
-	return StringIsEqual(string, prefix, prefix_length)
-		? string + prefix_length
+	if (p_length < suffix_length)
+		return nullptr;
+
+	const auto *q = p + p_length - suffix_length;
+	return memcmp(q, suffix, suffix_length * sizeof(*suffix)) == 0
+		? q
 		: nullptr;
-}
-
-const wchar_t *
-StringAfterPrefixCI(const wchar_t *string, const wchar_t *prefix) noexcept
-{
-	assert(string != nullptr);
-	assert(prefix != nullptr);
-
-	size_t prefix_length = StringLength(prefix);
-	return StringIsEqual(string, prefix, prefix_length)
-		? string + prefix_length
-		: nullptr;
-}
-
-bool
-StringStartsWithIgnoreCase(const wchar_t *haystack,
-			   const wchar_t *needle) noexcept
-{
-	return StringIsEqualIgnoreCase(haystack, needle,
-				       StringLength(needle));
 }

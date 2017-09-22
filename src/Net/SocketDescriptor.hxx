@@ -55,7 +55,7 @@ public:
 		return fd == other.fd;
 	}
 
-#ifdef HAVE_POSIX
+#ifndef _WIN32
 	/**
 	 * Convert a #FileDescriptor to a #SocketDescriptor.  This is only
 	 * possible on operating systems where socket descriptors are the
@@ -78,6 +78,9 @@ public:
 #endif
 
 	using FileDescriptor::IsDefined;
+#ifndef _WIN32
+	using FileDescriptor::IsValid;
+#endif
 	using FileDescriptor::Get;
 	using FileDescriptor::Set;
 	using FileDescriptor::Steal;
@@ -87,9 +90,12 @@ public:
 		return SocketDescriptor(FileDescriptor::Undefined());
 	}
 
-#ifdef HAVE_POSIX
+#ifndef _WIN32
 	using FileDescriptor::SetNonBlocking;
 	using FileDescriptor::SetBlocking;
+	using FileDescriptor::EnableCloseOnExec;
+	using FileDescriptor::DisableCloseOnExec;
+	using FileDescriptor::Duplicate;
 	using FileDescriptor::Close;
 #else
 	/**
@@ -141,7 +147,7 @@ public:
 	ssize_t Read(void *buffer, size_t length);
 	ssize_t Write(const void *buffer, size_t length);
 
-#ifndef HAVE_POSIX
+#ifdef _WIN32
 	int WaitReadable(int timeout_ms) const;
 	int WaitWritable(int timeout_ms) const;
 #else

@@ -28,15 +28,6 @@
  */
 
 #include "StringCompare.hxx"
-#include "StringAPI.hxx"
-
-#include <string.h>
-
-bool
-StringStartsWith(const char *haystack, const char *needle) noexcept
-{
-	return memcmp(haystack, needle, StringLength(needle) * sizeof(needle[0])) == 0;
-}
 
 bool
 StringEndsWith(const char *haystack, const char *needle) noexcept
@@ -60,26 +51,16 @@ StringEndsWithIgnoreCase(const char *haystack, const char *needle) noexcept
 }
 
 const char *
-StringAfterPrefix(const char *string, const char *prefix) noexcept
+FindStringSuffix(const char *p, const char *suffix) noexcept
 {
-	size_t prefix_length = strlen(prefix);
-	return StringIsEqual(string, prefix, prefix_length)
-		? string + prefix_length
-		: nullptr;
-}
+	const size_t p_length = StringLength(p);
+	const size_t suffix_length = StringLength(suffix);
 
-const char *
-StringAfterPrefixCI(const char *string, const char *prefix) noexcept
-{
-	size_t prefix_length = StringLength(prefix);
-	return strncasecmp(string, prefix, prefix_length) == 0
-		? string + prefix_length
-		: nullptr;
-}
+	if (p_length < suffix_length)
+		return nullptr;
 
-bool
-StringStartsWithIgnoreCase(const char *haystack, const char *needle) noexcept
-{
-	return StringIsEqualIgnoreCase(haystack, needle,
-				       StringLength(needle) * sizeof(needle[0]));
+	const char *q = p + p_length - suffix_length;
+	return memcmp(q, suffix, suffix_length) == 0
+		? q
+		: nullptr;
 }

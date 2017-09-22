@@ -54,7 +54,7 @@ struct StackIndex {
 struct LightUserData {
 	void *value;
 
-	constexpr LightUserData(void *_value):value(_value) {}
+	explicit constexpr LightUserData(void *_value):value(_value) {}
 };
 
 template<typename... T>
@@ -230,7 +230,7 @@ SetField(lua_State *L, int idx, const char *name, V &&value)
 {
 	const ScopeCheckStack check_stack(L);
 
-	Push(L, value);
+	Push(L, std::forward<V>(value));
 	lua_setfield(L, idx, name);
 }
 
@@ -238,7 +238,7 @@ template<typename V>
 static inline void
 SetRegistry(lua_State *L, const char *name, V &&value)
 {
-	SetField(L, LUA_REGISTRYINDEX, name, value);
+	SetField(L, LUA_REGISTRYINDEX, name, std::forward<V>(value));
 }
 
 static inline void *
@@ -259,7 +259,7 @@ SetField(lua_State *L, const char *package, const char *name, V &&value)
 	const ScopeCheckStack check_stack(L);
 
 	lua_getglobal(L, package);
-	SetField(L, -2, name, value);
+	SetField(L, -2, name, std::forward<V>(value));
 	lua_pop(L, 1);
 }
 
@@ -271,10 +271,6 @@ gcc_nonnull_all
 static inline void
 SetPackagePath(lua_State *L, const char *path) {
 	SetField(L, "package", "path", path);
-}
-
-template<typename F>
-void ForEach(lua_State *L) {
 }
 
 }

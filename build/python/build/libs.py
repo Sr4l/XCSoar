@@ -79,9 +79,9 @@ freetype = FreeTypeProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.54.1.tar.gz',
-    'http://github.com/curl/curl/files/1101227/curl-7.54.1.tar.gz',
-    'cd404b808b253512dafec4fed0fb2cc98370d818a7991826c3021984fc27f9d0',
+    'http://curl.haxx.se/download/curl-7.55.1.tar.xz',
+    'https://github.com/curl/curl/releases/download/curl-7_55_1/curl-7.55.1.tar.bz2',
+    '3eafca6e84ecb4af5f35795dee84e643d5428287e88c041122bb8dac18676bb7',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -117,9 +117,9 @@ proj = AutotoolsProject(
 )
 
 libpng = LibPNGProject(
-    'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.31.tar.xz',
-    'http://downloads.sourceforge.net/project/libpng/libpng16/1.6.31/libpng-1.6.31.tar.xz',
-    '232a602de04916b2b5ce6f901829caf419519e6a16cc9cd7c1c91187d3ee8b41',
+    'ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.32.tar.xz',
+    'http://downloads.sourceforge.net/project/libpng/libpng16/1.6.32/libpng-1.6.32.tar.xz',
+    'c918c3113de74a692f0a1526ce881dc26067763eb3915c57ef3a0f7b6886f59b',
     'lib/libpng.a',
     [
         '--disable-shared', '--enable-static',
@@ -134,6 +134,25 @@ libjpeg = AutotoolsProject(
     [
         '--disable-shared', '--enable-static',
     ]
+)
+
+libusb = AutotoolsProject(
+    'https://github.com//libusb/libusb/releases/download/v1.0.21/libusb-1.0.21.tar.bz2',
+    'http://sourceforge.net/projects/libusb/files/libusb-1.0/libusb-1.0.21/libusb-1.0.21.tar.bz2',
+    '7dce9cce9a81194b7065ee912bcd55eeffebab694ea403ffb91b67db66b1824b',
+    'lib/libusb-1.0.a',
+    [
+        '--disable-shared', '--enable-static',
+        '--disable-udev',
+    ]
+)
+
+simple_usbmodeswitch = AutotoolsProject(
+    'https://github.com/felixhaedicke/simple_usbmodeswitch/releases/download/v1.0/simple_usbmodeswitch-1.0.tar.bz2',
+    'http://s15356785.onlinehome-server.info/~felix/simple_usbmodeswitch/simple_usbmodeswitch-1.0.tar.bz2',
+    '35e8a6ed8551ef419baf7310e54d6d1a81e18bf44e111b07d74285001f18e98d',
+    'bin/simple_usbmodeswitch',
+    ldflags='-pthread',
 )
 
 libtiff = AutotoolsProject(

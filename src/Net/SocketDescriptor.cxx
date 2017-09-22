@@ -32,14 +32,14 @@
 #include "StaticSocketAddress.hxx"
 #include "IPv4Address.hxx"
 
-#ifdef HAVE_POSIX
-#include <sys/socket.h>
-#else
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
 #endif
 
-#ifndef HAVE_POSIX
+#ifdef _WIN32
 
 void
 SocketDescriptor::Close()
@@ -53,13 +53,13 @@ SocketDescriptor::Close()
 SocketDescriptor
 SocketDescriptor::Accept()
 {
-#if defined(__linux__) && !defined(__BIONIC__) && !defined(KOBO)
-	int fd = ::accept4(Get(), nullptr, nullptr, SOCK_CLOEXEC);
+#ifdef HAVE_ACCEPT4
+	int connection_fd = ::accept4(Get(), nullptr, nullptr, SOCK_CLOEXEC);
 #else
-	int fd = ::accept(Get(), nullptr, nullptr);
+	int connection_fd = ::accept(Get(), nullptr, nullptr);
 #endif
-	return fd >= 0
-		? SocketDescriptor(fd)
+	return connection_fd >= 0
+		? SocketDescriptor(connection_fd)
 		: Undefined();
 }
 
@@ -88,11 +88,11 @@ SocketDescriptor::Create(int domain, int type, int protocol)
 	type |= SOCK_CLOEXEC;
 #endif
 
-	int fd = socket(domain, type, protocol);
-	if (fd < 0)
+	int new_fd = socket(domain, type, protocol);
+	if (new_fd < 0)
 		return false;
 
-	Set(fd);
+	Set(new_fd);
 	return true;
 }
 
@@ -150,7 +150,7 @@ ssize_t
 SocketDescriptor::Read(void *buffer, size_t length)
 {
 	int flags = 0;
-#ifdef HAVE_POSIX
+#ifndef _WIN32
 	flags |= MSG_DONTWAIT;
 #endif
 
@@ -168,7 +168,7 @@ SocketDescriptor::Write(const void *buffer, size_t length)
 	return ::send(Get(), (const char *)buffer, length, flags);
 }
 
-#ifndef HAVE_POSIX
+#ifdef _WIN32
 
 int
 SocketDescriptor::WaitReadable(int timeout_ms) const
@@ -215,7 +215,7 @@ SocketDescriptor::Read(void *buffer, size_t length,
 		       StaticSocketAddress &address)
 {
 	int flags = 0;
-#ifdef HAVE_POSIX
+#ifndef _WIN32
 	flags |= MSG_DONTWAIT;
 #endif
 
@@ -233,7 +233,7 @@ SocketDescriptor::Write(const void *buffer, size_t length,
 			SocketAddress address)
 {
 	int flags = 0;
-#ifdef HAVE_POSIX
+#ifndef _WIN32
 	flags |= MSG_DONTWAIT;
 #endif
 #ifdef __linux__

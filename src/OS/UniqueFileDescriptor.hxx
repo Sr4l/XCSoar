@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UNIQUE_FILE_DESCRIPTOR_HPP
-#define UNIQUE_FILE_DESCRIPTOR_HPP
+#ifndef UNIQUE_FILE_DESCRIPTOR_HXX
+#define UNIQUE_FILE_DESCRIPTOR_HXX
 
 #include "FileDescriptor.hxx"
 
@@ -70,7 +70,7 @@ public:
 	}
 
 	using FileDescriptor::IsDefined;
-#ifdef HAVE_POSIX
+#ifndef _WIN32
 	using FileDescriptor::IsValid;
 #endif
 	using FileDescriptor::Get;
@@ -88,7 +88,7 @@ public:
 	using FileDescriptor::Open;
 	using FileDescriptor::OpenReadOnly;
 
-#ifdef HAVE_POSIX
+#ifndef _WIN32
 	using FileDescriptor::OpenNonBlocking;
 
 	static bool CreatePipe(UniqueFileDescriptor &r, UniqueFileDescriptor &w) {
@@ -117,20 +117,23 @@ public:
 	using FileDescriptor::CreateInotify;
 #endif
 
-	void Close() {
-		if (IsDefined())
-			FileDescriptor::Close();
+	bool Close() {
+		return IsDefined() && FileDescriptor::Close();
 	}
 
 	using FileDescriptor::Rewind;
+	using FileDescriptor::Seek;
+	using FileDescriptor::Skip;
+	using FileDescriptor::Tell;
 	using FileDescriptor::GetSize;
 	using FileDescriptor::Read;
 	using FileDescriptor::Write;
 
-#ifdef HAVE_POSIX
+#ifndef _WIN32
 	using FileDescriptor::Poll;
 	using FileDescriptor::WaitReadable;
 	using FileDescriptor::WaitWritable;
+	using FileDescriptor::IsReadyForWriting;
 #endif
 };
 
