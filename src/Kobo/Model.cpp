@@ -58,6 +58,7 @@ static constexpr struct {
   { "SN-N514", KoboModel::AURA },
   { "SN-N236", KoboModel::AURA2 },
   { "SN-N705", KoboModel::MINI },
+  { "", KoboModel::TOUCH_ORIGINAL },
   { "SN-N905", KoboModel::TOUCH },
   { "SN-N587", KoboModel::TOUCH2 },
   { "SN-613A4", KoboModel::GLO },

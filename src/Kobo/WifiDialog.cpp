@@ -22,6 +22,8 @@ Copyright_License {
 */
 
 #include "WifiDialog.hpp"
+#include "Model.hpp"
+#include "OS/FileUtil.hpp"
 #include "Dialogs/WidgetDialog.hpp"
 #include "Dialogs/Message.hpp"
 #include "Dialogs/TextEntry.hpp"
@@ -177,8 +179,25 @@ WifiListWidget::OnPaintItem(Canvas &canvas, const PixelRect rc,
   if (StringIsEqual(info.bssid, status.bssid)) {
     state = _("Connected");
 
-    /* look up ip address for eth0 */
-    const auto addr = IPv4Address::GetDeviceAddress("eth0");
+    /* look up ip address for eth0 or wlan0 */
+    char devicename[16];
+    switch (DetectKoboModel())
+    {
+    case KoboModel::UNKNOWN: // Let unknown try the old device
+    case KoboModel::MINI:
+    case KoboModel::TOUCH:
+    case KoboModel::AURA:
+    case KoboModel::GLO:
+    case KoboModel::TOUCH2:
+    case KoboModel::GLO_HD:
+    case KoboModel::AURA2:
+      strncpy(devicename, "eth0", 16-1);
+      break;
+    case KoboModel::TOUCH_ORIGINAL:
+      strncpy(devicename, "wlan0", 16-1);
+      break;
+    }
+    const auto addr = IPv4Address::GetDeviceAddress(devicename);
     if (addr.IsDefined()) { /* valid address? */
       StaticString<40> addr_str;
       if (addr.ToString(addr_str.buffer(), addr_str.capacity()) != nullptr) {
@@ -316,8 +335,26 @@ WifiListWidget::OnAction(int id)
 bool
 WifiListWidget::EnsureConnected()
 {
-  return wpa_supplicant.IsConnected() ||
-    wpa_supplicant.Connect("/var/run/wpa_supplicant/eth0");
+  switch (DetectKoboModel())
+  {
+  case KoboModel::UNKNOWN: // Let unknown try the old device
+  case KoboModel::MINI:
+  case KoboModel::TOUCH:
+  case KoboModel::AURA:
+  case KoboModel::GLO:
+  case KoboModel::TOUCH2:
+  case KoboModel::GLO_HD:
+  case KoboModel::AURA2:
+    return wpa_supplicant.IsConnected() ||
+        wpa_supplicant.Connect("/var/run/wpa_supplicant/eth0");
+    break;
+  case KoboModel::TOUCH_ORIGINAL:
+    return wpa_supplicant.IsConnected() ||
+        wpa_supplicant.Connect("/var/run/wpa_supplicant/wlan0");
+    break;
+  default:
+    return false;
+  }
 }
 
 inline WifiListWidget::NetworkInfo *

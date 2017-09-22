@@ -142,6 +142,11 @@ KoboExportUSBStorage()
     result = InsMod("/drivers/mx6sl-ntx/usb/gadget/g_file_storage.ko",
                     "file=/dev/mmcblk0p3", "stall=0");
     break;
+  case KoboModel::TOUCH_ORIGINAL:
+    InsMod("/drivers/freescale/usb/gadget/arcotg_udc.ko");
+    result = InsMod("/drivers/freescale/usb/gadget/g_file_storage.ko",
+                    "file=/dev/mmcblk0p3", "stall=0");
+    break;
   }
   return result;
 #else
@@ -163,7 +168,7 @@ bool
 IsKoboWifiOn()
 {
 #ifdef KOBO
-  return Directory::Exists(Path("/sys/class/net/eth0"));
+  return Directory::Exists(Path("/sys/class/net/eth0")) || Directory::Exists(Path("/sys/class/net/wlan0"));
 #else
   return false;
 #endif
@@ -173,6 +178,7 @@ bool
 KoboWifiOn()
 {
 #ifdef KOBO
+  char devicename[16] = "eth0";
 
   switch (DetectKoboModel())
   {
@@ -195,20 +201,24 @@ KoboWifiOn()
     InsMod("/drivers/mx6sl-ntx/wifi/sdio_wifi_pwr.ko");
     InsMod("/drivers/mx6sl-ntx/wifi/8189fs.ko");
     break;
+  case KoboModel::TOUCH_ORIGINAL:
+    InsMod("/drivers/freescale/wifi/ar6000.ko");
+    strncpy(devicename, "wlan0", 16-1);
+    break;
   }
 
   Sleep(2000);
 
-  Run("/sbin/ifconfig", "eth0", "up");
-  Run("/sbin/iwconfig", "eth0", "power", "off");
-  Run("/bin/wlarm_le", "-i", "eth0", "up");
-  Run("/bin/wpa_supplicant", "-i", "eth0",
+  Run("/sbin/ifconfig", devicename, "up");
+  Run("/sbin/iwconfig", devicename, "power", "off");
+  Run("/bin/wlarm_le", "-i", devicename, "up");
+  Run("/bin/wpa_supplicant", "-i", devicename,
       "-c", "/etc/wpa_supplicant/wpa_supplicant.conf",
       "-C", "/var/run/wpa_supplicant", "-B", "-D", "wext");
 
   Sleep(2000);
 
-  Start("/sbin/udhcpc", "-S", "-i", "eth0",
+  Start("/sbin/udhcpc", "-S", "-i", devicename,
         "-s", "/etc/udhcpc.d/default.script",
         "-t15", "-T10", "-A3", "-f", "-q");
 
@@ -225,7 +235,11 @@ KoboWifiOff()
   Run("/usr/bin/killall", "wpa_supplicant", "udhcpc");
   Run("/bin/wlarm_le", "-i", "eth0", "down");
   Run("/sbin/ifconfig", "eth0", "down");
+  Run("/bin/wlarm_le", "-i", "wlan0", "down");
+  Run("/sbin/ifconfig", "wlan0", "down");
 
+
+  RmMod("ar6000");
   RmMod("dhd");
   RmMod("8189fs");
   RmMod("sdio_wifi_pwr");
@@ -274,7 +288,24 @@ KoboRunTelnetd()
   if (mkdir("/dev/pts", 0777) == 0)
     mount("none", "/dev/pts", "devpts", MS_RELATIME, NULL);
 
-  Run("/usr/sbin/telnetd", "-l", "/bin/sh");
+  switch (DetectKoboModel())
+  {
+  case KoboModel::UNKNOWN: // Let unknown try the old device
+  case KoboModel::MINI:
+  case KoboModel::TOUCH:
+  case KoboModel::AURA:
+  case KoboModel::GLO: // TODO: is this correct?
+  case KoboModel::TOUCH2:
+  case KoboModel::GLO_HD:
+  case KoboModel::AURA2:
+    Run("/usr/sbin/telnetd", "-l", "/bin/sh");
+    break;
+  case KoboModel::TOUCH_ORIGINAL:
+    // must run in Foreground, probably a busybox bug in this old version
+    Start("/bin/busybox", "telnetd", "-l", "/bin/sh", "-F");
+    break;
+  }
+  //
 #endif
 }
 
@@ -283,6 +314,21 @@ KoboRunFtpd()
 {
 #ifdef KOBO
   /* ftpd needs to be fired through tcpsvd (or inetd) */
-  Start("/usr/bin/tcpsvd", "-E", "0.0.0.0", "21", "ftpd", "-w", "/mnt/onboard");
+  switch (DetectKoboModel())
+  {
+  case KoboModel::UNKNOWN: // Let unknown try the old device
+  case KoboModel::MINI:
+  case KoboModel::TOUCH:
+  case KoboModel::AURA:
+  case KoboModel::GLO: // TODO: is this correct?
+  case KoboModel::TOUCH2:
+  case KoboModel::GLO_HD:
+  case KoboModel::AURA2:
+    Start("/usr/bin/tcpsvd", "-E", "0.0.0.0", "21", "ftpd", "-w", "/mnt/onboard");
+    break;
+  case KoboModel::TOUCH_ORIGINAL:
+    Start("/bin/busybox", "tcpsvd", "-E", "0.0.0.0", "21", "/bin/busybox", "ftpd", "-w", "/mnt/onboard");
+    break;
+  }
 #endif
 }

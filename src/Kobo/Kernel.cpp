@@ -22,6 +22,7 @@ Copyright_License {
 */
 
 #include "Kernel.hpp"
+#include "Model.hpp"
 
 #include <stdexcept>
 
@@ -113,10 +114,23 @@ try {
   GunzipReader gunzip(file);
   BufferedReader reader(gunzip);
 
-  char *line;
-  while ((line = reader.ReadLine()) != nullptr)
-    if (strcmp(line, "CONFIG_USB_EHCI_ARC_OTG=y") == 0)
-      return true;
+  switch (DetectKoboModel())
+  {
+  case KoboModel::UNKNOWN: // Let unknown try the old device
+  case KoboModel::MINI:
+  case KoboModel::TOUCH:
+  case KoboModel::AURA:
+  case KoboModel::GLO: // TODO: is this correct?
+  case KoboModel::TOUCH2:
+  case KoboModel::GLO_HD:
+  case KoboModel::AURA2:
+    char *line;
+    while ((line = reader.ReadLine()) != nullptr)
+      if (strcmp(line, "CONFIG_USB_EHCI_ARC_OTG=y") == 0)
+        return true;
+  case KoboModel::TOUCH_ORIGINAL:
+    break;
+  }
 #endif
 
   return false;

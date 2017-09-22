@@ -29,6 +29,7 @@ Copyright_License {
 enum class KoboModel {
   UNKNOWN,
   MINI,
+  TOUCH_ORIGINAL,
   TOUCH,
   TOUCH2,
   AURA,

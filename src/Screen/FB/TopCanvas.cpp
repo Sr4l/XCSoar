@@ -208,6 +208,7 @@ TopCanvas::Create(PixelSize new_size,
   case KoboModel::UNKNOWN:
   case KoboModel::MINI:
   case KoboModel::TOUCH:
+  case KoboModel::TOUCH_ORIGINAL:
   case KoboModel::GLO:
   case KoboModel::AURA:
     frame_sync = false;
