@@ -94,6 +94,13 @@ SystemWidget::SwitchKernel()
     kobo_kernel_image = "/opt/xcsoar/lib/kernel/uImage.aura2";
     break;
 
+  case KoboModel::TOUCH_ORIGINAL:
+    // DO NOT TRY TO LOAD A WRONG KERNEL ON N905A / Original Touch
+    // IT WILL BRICK THE DEVICE BECAUSE IT HAS A SOLDERED FLASH
+    otg_kernel_image = "/opt/xcsoar/lib/kernel/uImage.originaltouch.otg";
+    kobo_kernel_image = "/opt/xcsoar/lib/kernel/uImage.originaltouch.kobo";
+    break;
+
   default:
     otg_kernel_image = "/opt/xcsoar/lib/kernel/uImage.otg";
     kobo_kernel_image = "/opt/xcsoar/lib/kernel/uImage.kobo";
